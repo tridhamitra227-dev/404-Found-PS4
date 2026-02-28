@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serenova — Resort Reviews</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f4ef;
+    --bg2: #eeeae2;
+    --surface: #ffffff;
+    --surface2: #f3efe8;
+    --border: rgba(0,0,0,0.08);
+    --text: #1a1814;
+    --text2: #6b6456;
+    --accent: #c8a96e;
+    --accent2: #9d7e4f;
+    --gold: #c8a96e;
+    --shadow: 0 4px 24px rgba(0,0,0,0.08);
+    --shadow-lg: 0 12px 48px rgba(0,0,0,0.12);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  [data-theme="dark"] {
+    --bg: #0d0c0a;
+    --bg2: #131210;
+    --surface: #1a1916;
+    --surface2: #211f1c;
+    --border: rgba(255,255,255,0.07);
+    --text: #f0ece4;
+    --text2: #8c8478;
+    --accent: #c8a96e;
+    --accent2: #e8c98e;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow-lg: 0 12px 48px rgba(0,0,0,0.6);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: background var(--transition), color var(--transition);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── DARK MODE CANVAS ─── */
+  #dark-canvas {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  [data-theme="dark"] #dark-canvas { opacity: 1; }
+
+  /* ─── PAGES ─── */
+  .page {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(20px);
+    z-index: 10;
+    overflow-y: auto;
+  }
+  .page.active {
+    opacity: 1; pointer-events: all;
+    transform: translateY(0);
+    position: relative;
+  }
+
+  /* ─── AUTH PAGE ─── */
+  .auth-wrap {
+    width: 100%; max-width: 460px;
+    padding: 24px;
+    display: flex; flex-direction: column; align-items: center;
+    min-height: 100vh; justify-content: center;
+  }
+  .auth-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.8rem; font-weight: 300;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .auth-tagline {
+    font-size: 0.82rem; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--text2);
+    margin-bottom: 48px;
+  }
+  .auth-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 40px;
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+    transition: background var(--transition), box-shadow var(--transition);
+  }
+  .auth-tabs {
+    display: flex; gap: 0;
+    background: var(--bg2);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    margin-bottom: 32px;
+  }
+  .auth-tab {
+    flex: 1; text-align: center;
+    padding: 9px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 0.88rem; font-weight: 500;
+    color: var(--text2);
+    transition: all var(--transition);
+    user-select: none;
+  }
+  .auth-tab.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .form-group { margin-bottom: 20px; }
+  .form-label {
+    display: block; font-size: 0.78rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text2); margin-bottom: 8px; font-weight: 500;
+  }
+  .form-input {
+    width: 100%; padding: 13px 16px;
+    background: var(--bg2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.94rem;
+    outline: none;
+    transition: all var(--transition);
+  }
+  .form-input:focus {
+    border-color: var(--accent);
+    background: var(--surface);
+    box-shadow: 0 0 0 3px rgba(200,169,110,0.12);
+  }
+  .btn-primary {
+    width: 100%; padding: 14px;
+    background: var(--accent);
+    color: #fff;
+    border: none; border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.94rem; font-weight: 600;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all var(--transition);
+    margin-top: 8px;
+  }
+  .btn-primary:hover {
+    background: var(--accent2);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(200,169,110,0.35);
+  }
+  .btn-primary:active { transform: translateY(0); }
+  .forgot-link {
+    display: block; text-align: center;
+    font-size: 0.82rem; color: var(--text2);
+    text-decoration: none; margin-top: 16px;
+    transition: color var(--transition);
+  }
+  .forgot-link:hover { color: var(--accent); }
+
+  /* ─── TOPBAR ─── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 32px;
+    height: 64px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: background var(--transition);
+  }
+  .topbar-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.7rem; font-weight: 300;
+    letter-spacing: 0.1em; color: var(--accent);
+    cursor: pointer; user-select: none;
+  }
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .theme-toggle {
+    width: 52px; height: 28px;
+    background: var(--bg2);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    cursor: pointer;
+    position: relative;
+    transition: all var(--transition);
+    outline: none;
+  }
+  .theme-toggle::after {
+    content: '';
+    position: absolute; top: 3px; left: 3px;
+    width: 20px; height: 20px;
+    background: var(--accent);
+    border-radius: 50%;
+    transition: transform var(--transition);
+  }
+  [data-theme="dark"] .theme-toggle::after { transform: translateX(24px); }
+  .btn-logout {
+    font-size: 0.82rem; color: var(--text2);
+    background: none; border: 1px solid var(--border);
+    border-radius: 8px; padding: 7px 14px;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all var(--transition);
+  }
+  .btn-logout:hover { color: var(--text); border-color: var(--accent); }
+
+  /* ─── DASHBOARD ─── */
+  #dashboard-page, #detail-page {
+    min-height: 100vh; width: 100%;
+    flex-direction: column; align-items: stretch;
+    padding: 0;
+    justify-content: flex-start;
+  }
+  .dashboard-content {
+    max-width: 1200px; margin: 0 auto;
+    padding: 48px 32px;
+    width: 100%;
+  }
+  .search-hero { text-align: center; margin-bottom: 48px; }
+  .search-hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 300; line-height: 1.15;
+    margin-bottom: 12px;
+  }
+  .search-hero h1 em { color: var(--accent); font-style: italic; }
+  .search-hero p { color: var(--text2); font-size: 0.96rem; margin-bottom: 32px; }
+  .search-bar-wrap {
+    position: relative; max-width: 560px; margin: 0 auto;
+  }
+  .search-icon {
+    position: absolute; left: 18px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--text2); font-size: 1.1rem;
+    pointer-events: none;
+  }
+  .search-input {
+    width: 100%; padding: 16px 20px 16px 50px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 0.96rem;
+    outline: none; box-shadow: var(--shadow);
+    transition: all var(--transition);
+  }
+  .search-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(200,169,110,0.12), var(--shadow);
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem; font-weight: 400;
+    margin-bottom: 4px; letter-spacing: 0.02em;
+  }
+  .section-subtitle { font-size: 0.82rem; color: var(--text2); margin-bottom: 28px; }
+  .resort-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+  }
+  .resort-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all var(--transition);
+    box-shadow: var(--shadow);
+    position: relative;
+  }
+  .resort-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: rgba(200,169,110,0.3);
+  }
+  .resort-img {
+    width: 100%; height: 180px;
+    object-fit: cover;
+    background: linear-gradient(135deg, var(--bg2) 0%, var(--surface2) 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3rem;
+  }
+  .resort-img-placeholder {
+    width: 100%; height: 180px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3.5rem;
+    background: linear-gradient(135deg, var(--bg2) 0%, var(--surface2) 100%);
+  }
+  .resort-body { padding: 20px; }
+  .resort-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem; font-weight: 400;
+    margin-bottom: 4px; line-height: 1.25;
+  }
+  .resort-location {
+    font-size: 0.8rem; color: var(--text2);
+    text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 12px;
+  }
+  .star-row { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+  .stars { color: var(--gold); font-size: 0.9rem; letter-spacing: 1px; }
+  .star-num { font-size: 0.82rem; color: var(--text2); }
+  .resort-tag {
+    font-size: 0.8rem; color: var(--text2);
+    font-style: italic;
+    line-height: 1.4;
+  }
+  .badge {
+    position: absolute; top: 14px; right: 14px;
+    background: var(--accent);
+    color: #fff; font-size: 0.7rem;
+    padding: 4px 10px; border-radius: 20px;
+    font-weight: 600; letter-spacing: 0.06em;
+  }
+
+  /* ─── DETAIL PAGE ─── */
+  .detail-content {
+    max-width: 900px; margin: 0 auto;
+    padding: 48px 32px;
+    width: 100%;
+  }
+  .detail-back {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 0.82rem; color: var(--text2);
+    cursor: pointer; margin-bottom: 32px;
+    transition: color var(--transition);
+    user-select: none;
+    background: none; border: none;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0.04em;
+  }
+  .detail-back:hover { color: var(--accent); }
+  .detail-hero {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; flex-wrap: wrap; gap: 16px;
+    margin-bottom: 40px; padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 300; line-height: 1.1;
+  }
+  .detail-loc {
+    font-size: 0.84rem; color: var(--text2);
+    letter-spacing: 0.12em; text-transform: uppercase;
+    margin-top: 8px;
+  }
+  .detail-rating-badge {
+    display: flex; flex-direction: column; align-items: center;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 24px; flex-shrink: 0;
+  }
+  .detail-score {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.8rem; font-weight: 300; color: var(--accent);
+    line-height: 1;
+  }
+  .detail-score-label { font-size: 0.72rem; color: var(--text2); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px; }
+  .cat-tabs {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+  .cat-tab {
+    padding: 10px 20px;
+    border-radius: 50px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    font-size: 0.86rem; font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition);
+    user-select: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .cat-tab:hover { border-color: var(--accent); color: var(--text); }
+  .cat-tab.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(200,169,110,0.3);
+  }
+  .reviews-list { display: flex; flex-direction: column; gap: 20px; }
+  .review-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    transition: all var(--transition);
+    animation: fadeUp 0.4s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .review-header {
+    display: flex; align-items: center;
+    justify-content: space-between; margin-bottom: 12px;
+  }
+  .reviewer { display: flex; align-items: center; gap: 12px; }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; color: #fff; font-weight: 600;
+    flex-shrink: 0;
+  }
+  .reviewer-name { font-size: 0.92rem; font-weight: 500; }
+  .reviewer-date { font-size: 0.76rem; color: var(--text2); }
+  .review-stars { color: var(--gold); font-size: 0.88rem; }
+  .review-text { font-size: 0.92rem; color: var(--text2); line-height: 1.65; }
+
+  /* ─── DARK MODE PARTICLES ─── */
+  [data-theme="dark"] .resort-card:hover {
+    box-shadow: 0 12px 48px rgba(200,169,110,0.15), 0 0 0 1px rgba(200,169,110,0.2);
+  }
+  [data-theme="dark"] .topbar {
+    background: rgba(26,25,22,0.85);
+    border-bottom-color: rgba(255,255,255,0.05);
+  }
+
+  /* ─── FLOAT EFFECT ─── */
+  .float-element {
+    transition: transform 0.15s ease-out;
+    will-change: transform;
+  }
+
+  /* ─── EMPTY STATE ─── */
+  .empty-state {
+    text-align: center; padding: 64px 32px;
+    color: var(--text2);
+  }
+  .empty-state-icon { font-size: 3rem; margin-bottom: 16px; }
+  .empty-state-text { font-size: 1rem; }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--text); color: var(--bg);
+    padding: 12px 24px; border-radius: 50px;
+    font-size: 0.88rem; font-weight: 500;
+    z-index: 9999; pointer-events: none;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+    opacity: 0;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 600px) {
+    .topbar { padding: 0 16px; }
+    .dashboard-content, .detail-content { padding: 32px 16px; }
+    .auth-card { padding: 28px 20px; }
+    .detail-hero { flex-direction: column; }
+    .resort-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ─── GLOW CURSOR (dark mode) ─── */
+  .cursor-glow {
+    position: fixed; width: 300px; height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(200,169,110,0.08) 0%, transparent 70%);
+    pointer-events: none; z-index: 5;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.3s ease;
+    opacity: 0;
+  }
+  [data-theme="dark"] .cursor-glow { opacity: 1; }
+</style>
+</head>
+<body>
+
+<canvas id="dark-canvas"></canvas>
+<div class="cursor-glow" id="cursorGlow"></div>
+<div class="toast" id="toast"></div>
+
+<!-- ─── AUTH PAGE ─── -->
+<div class="page active" id="auth-page">
+  <div class="auth-wrap">
+    <div class="auth-logo">Serenova</div>
+    <div class="auth-tagline">Discover World-Class Resorts</div>
+    <div class="auth-card float-element" id="authCard">
+      <div class="auth-tabs">
+        <div class="auth-tab active" onclick="switchTab('login')">Sign In</div>
+        <div class="auth-tab" onclick="switchTab('signup')">Create Account</div>
+      </div>
+      <div id="login-form">
+        <div class="form-group">
+          <label class="form-label">Email or Username</label>
+          <input class="form-input" type="text" id="login-email" placeholder="you@example.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button class="btn-primary" onclick="handleLogin()">Sign In</button>
+        <a href="#" class="forgot-link" onclick="showToast('Password reset email sent!')">Forgot your password?</a>
+      </div>
+      <div id="signup-form" style="display:none">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input class="form-input" type="text" id="signup-name" placeholder="Alex Johnson">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" type="email" id="signup-email" placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" type="password" id="signup-pass" placeholder="Choose a strong password">
+        </div>
+        <button class="btn-primary" onclick="handleSignup()">Create Account</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── DASHBOARD PAGE ─── -->
+<div class="page" id="dashboard-page">
+  <div class="topbar">
+    <div class="topbar-logo" onclick="showDashboard()">Serenova</div>
+    <div class="topbar-right">
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme"></button>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+  <div class="dashboard-content">
+    <div class="search-hero">
+      <h1>Find Your <em>Perfect</em> Escape</h1>
+      <p>Discover and review the world's most extraordinary resorts</p>
+      <div class="search-bar-wrap">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" type="text" id="searchInput" placeholder="Search by resort name or location…" oninput="filterResorts()" autocomplete="off">
+      </div>
+    </div>
+    <div>
+      <div class="section-title">Featured Resorts</div>
+      <div class="section-subtitle" id="results-count">Showing all 8 resorts</div>
+      <div class="resort-grid" id="resortGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── DETAIL PAGE ─── -->
+<div class="page" id="detail-page">
+  <div class="topbar">
+    <div class="topbar-logo" onclick="showDashboard()">Serenova</div>
+    <div class="topbar-right">
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme"></button>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+  <div class="detail-content">
+    <button class="detail-back" onclick="showDashboard()">← Back to Resorts</button>
+    <div class="detail-hero">
+      <div>
+        <div class="detail-name" id="d-name">Resort Name</div>
+        <div class="detail-loc" id="d-loc">Location</div>
+        <div class="star-row" style="margin-top:14px">
+          <div class="stars" id="d-stars"></div>
+          <div class="star-num" id="d-rating"></div>
+        </div>
+      </div>
+      <div class="detail-rating-badge">
+        <div class="detail-score" id="d-score"></div>
+        <div class="detail-score-label">Overall Score</div>
+        <div class="stars" id="d-stars2" style="margin-top:6px;font-size:1rem;"></div>
+      </div>
+    </div>
+    <div class="cat-tabs">
+      <div class="cat-tab active" onclick="setCategory('food', this)">🍽 Food</div>
+      <div class="cat-tab" onclick="setCategory('ambiance', this)">✨ Ambiance & Cleanliness</div>
+      <div class="cat-tab" onclick="setCategory('amenities', this)">🏊 Amenities</div>
+      <div class="cat-tab" onclick="setCategory('services', this)">🛎 Services</div>
+    </div>
+    <div class="reviews-list" id="reviewsList"></div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const RESORTS = [
+  {
+    id: 1, name: "Aman Nusa Dua", location: "Bali, Indonesia",
+    rating: 4.8, emoji: "🌴", tag: "Secluded beachfront luxury with temple ceremonies and rice paddy vistas.",
+    badge: "Top Rated",
+    reviews: {
+      food: [
+        { user: "Priya M.", date: "Jan 2025", rating: 5, text: "The Indonesian tasting menu was a masterpiece — each dish told a story of local spice and tradition. The coconut sambal still haunts me in the best way." },
+        { user: "Thomas L.", date: "Dec 2024", rating: 5, text: "Private beach dining under the stars, with fresh seafood caught that morning. Aman never fails to elevate every meal into an event." },
+        { user: "Yuki S.", date: "Nov 2024", rating: 4, text: "Breakfast with rice terrace views was magical. The fresh tropical fruit spread was extraordinary. Could use more vegan options." },
+      ],
+      ambiance: [
+        { user: "Elena R.", date: "Feb 2025", rating: 5, text: "Architecture in perfect harmony with nature. Every path leads you somewhere breathtaking — pavilions hover over lotus ponds, silence is absolute." },
+        { user: "James B.", date: "Jan 2025", rating: 5, text: "Immaculate. Not a single detail out of place. The scent of frangipani throughout the property creates an unforgettable sensory memory." },
+      ],
+      amenities: [
+        { user: "Sofia A.", date: "Mar 2025", rating: 5, text: "The infinity pool dissolving into the Indian Ocean is worth every penny. Private plunge pools in each villa, a world-class spa with traditional Balinese healing rituals." },
+        { user: "David K.", date: "Jan 2025", rating: 4, text: "Outstanding spa and yoga pavilion. Sunrise Surya Namaskar sessions above the rice paddies changed something in me. Gym is compact but well-equipped." },
+      ],
+      services: [
+        { user: "Maria C.", date: "Feb 2025", rating: 5, text: "Staff remembered our names from day one and our preferences by day two. The guest liaison arranged a private temple ceremony that was profoundly moving." },
+        { user: "Alex N.", date: "Dec 2024", rating: 5, text: "Every request was met with warmth and genuine care. The butler service is discreet yet magically present exactly when needed." },
+      ]
+    }
+  },
+  {
+    id: 2, name: "Six Senses Zil Pasyon", location: "Felicité Island, Seychelles",
+    rating: 4.9, emoji: "🌊", tag: "Private island sustainability paradise with unrivaled marine biodiversity.",
+    badge: "Eco Luxury",
+    reviews: {
+      food: [
+        { user: "Hannah W.", date: "Feb 2025", rating: 5, text: "The resort's organic garden provides 40% of ingredients — you taste the difference. The chef's table dinner was among the finest meals of my life." },
+        { user: "Omar F.", date: "Jan 2025", rating: 5, text: "Grilled Seychellois fish with Creole spices, eaten barefoot on the sand as giant tortoises wandered by. Nothing will ever compare." },
+      ],
+      ambiance: [
+        { user: "Chloe T.", date: "Mar 2025", rating: 5, text: "Absolute paradise. The island has no cars, no roads — just granite boulders, jungle, and ocean. Waking up to the sound of waves and birdsong is transformative." },
+        { user: "Raj P.", date: "Jan 2025", rating: 5, text: "Six Senses has preserved this ecosystem beautifully. The giant tortoises roaming freely among the villas creates an otherworldly magic." },
+      ],
+      amenities: [
+        { user: "Lisa V.", date: "Feb 2025", rating: 5, text: "Snorkeling directly from the villa is extraordinary — whale sharks have been spotted. The overwater spa treatment over the coral reef was transcendent." },
+        { user: "Ben M.", date: "Jan 2025", rating: 4, text: "The Six Senses Sleep program genuinely worked. Biometric testing and personalized wellness plans. The LEEP gym is surprisingly comprehensive for such a remote island." },
+      ],
+      services: [
+        { user: "Natasha G.", date: "Feb 2025", rating: 5, text: "The Alchemy Bar staff created a personalized essential oil blend for us that we'll treasure forever. Every team member exudes warmth and island joy." },
+      ]
+    }
+  },
+  {
+    id: 3, name: "The Brando", location: "Tetiaroa, French Polynesia",
+    rating: 4.7, emoji: "🏝", tag: "Marlon Brando's private atoll — raw Polynesian paradise meets carbon neutrality.",
+    reviews: {
+      food: [
+        { user: "Pierre D.", date: "Jan 2025", rating: 5, text: "The Nami restaurant offers Japanese-Polynesian fusion that is genuinely artistic. The sashimi made from fish caught an hour before was extraordinary freshness." },
+        { user: "Grace L.", date: "Dec 2024", rating: 4, text: "Wonderful ingredients from the resort's organic farm. The coconut crab ravioli was a revelation. Wine list could be more adventurous." },
+      ],
+      ambiance: [
+        { user: "Marco S.", date: "Feb 2025", rating: 5, text: "Brando's ashes are scattered on this island, and you feel his spirit everywhere — wild, romantic, free. The bioluminescent lagoon at night defies description." },
+      ],
+      amenities: [
+        { user: "Ingrid H.", date: "Jan 2025", rating: 4, text: "Solar-powered paradise. Kayaking through the lagoon, shark-feeding expeditions, manta ray snorkeling. Pure nature as the ultimate amenity." },
+      ],
+      services: [
+        { user: "Carlos M.", date: "Jan 2025", rating: 5, text: "Every staff member was born on Tetiaroa — their connection to the land and their genuine pride in sharing it created magic we never expected." },
+      ]
+    }
+  },
+  {
+    id: 4, name: "Singita Grumeti", location: "Serengeti, Tanzania",
+    rating: 4.8, emoji: "🦁", tag: "Witness the Great Migration from the most exclusive perch in Africa.",
+    badge: "Iconic",
+    reviews: {
+      food: [
+        { user: "Victoria S.", date: "Feb 2025", rating: 5, text: "Bush dinners with a 360° view of the Serengeti, lanterns flickering in the breeze, Masai warriors standing sentinel — culinary theater at its finest." },
+        { user: "Michael T.", date: "Jan 2025", rating: 5, text: "South African wines served on a kopje as a thousand wildebeest crossed below us. The kitchen's commitment to local produce elevates every meal." },
+      ],
+      ambiance: [
+        { user: "Amara K.", date: "Mar 2025", rating: 5, text: "The silence of the Serengeti is deafening. Singita has built something that enhances rather than intrudes on this wilderness. Absolute reverence." },
+        { user: "John B.", date: "Feb 2025", rating: 5, text: "Colonial elegance with African soul. The main lodge is magnificent — but nothing compares to sitting on the deck at dusk as elephants pass twenty meters away." },
+      ],
+      amenities: [
+        { user: "Leila N.", date: "Jan 2025", rating: 4, text: "Two morning and evening game drives daily. The ranger's knowledge of individual animals was astonishing — she knew each leopard's name and territory." },
+      ],
+      services: [
+        { user: "Oscar W.", date: "Feb 2025", rating: 5, text: "The tracker-ranger duo we had were the finest guides I've encountered in 30 years of safari. Their passion for conservation is infectious and inspiring." },
+      ]
+    }
+  },
+  {
+    id: 5, name: "Amanjiwo", location: "Central Java, Indonesia",
+    rating: 4.6, emoji: "🏛", tag: "Overlooking the Borobudur temple — a sanctuary where spirituality is tangible.",
+    reviews: {
+      food: [
+        { user: "Ren L.", date: "Jan 2025", rating: 4, text: "The Javanese rijsttafel was extraordinary — seventeen small dishes each more nuanced than the last. Dining in view of Borobudur at sunrise was deeply moving." },
+      ],
+      ambiance: [
+        { user: "Isabelle F.", date: "Feb 2025", rating: 5, text: "There's a profound stillness here. The circular design echoes Borobudur's mandalas. Monks pass at dawn, gamelan music drifts across the rice paddies." },
+        { user: "Kevin H.", date: "Jan 2025", rating: 5, text: "Understated grandeur. The palm-lined driveway, the ancient volcanic views, the spiritual weight of being adjacent to a UNESCO heritage site." },
+      ],
+      amenities: [
+        { user: "Mei Z.", date: "Dec 2024", rating: 4, text: "Private dawn visits to Borobudur arranged by the concierge before tourists arrive is the most magnificent morning experience imaginable." },
+      ],
+      services: [
+        { user: "Antoine B.", date: "Jan 2025", rating: 4, text: "Warm and deeply knowledgeable. The cultural program — batik workshops, wayang performances, temple ceremonies — felt authentic rather than performative." },
+      ]
+    }
+  },
+  {
+    id: 6, name: "Nihi Sumba", location: "Sumba Island, Indonesia",
+    rating: 4.7, emoji: "🌺", tag: "Africa meets the tropics — raw, wild, and heartbreaking in its beauty.",
+    reviews: {
+      food: [
+        { user: "Zara K.", date: "Feb 2025", rating: 4, text: "The beach bonfire dinners with fresh lobster and Sumbanese ikat weavers performing are unforgettable. Simple but deeply honest food." },
+      ],
+      ambiance: [
+        { user: "Daniel W.", date: "Jan 2025", rating: 5, text: "Untouched. This island has a different energy — wilder, rawer, more confronting. The sunsets over the Indian Ocean left me speechless." },
+      ],
+      amenities: [
+        { user: "Sasha T.", date: "Mar 2025", rating: 5, text: "Horse riding through paddy fields at sunrise, surfing waves that are mine alone, exploring living megalithic villages — adventure at the highest level." },
+        { user: "Finn O.", date: "Jan 2025", rating: 4, text: "The Nihioka spa treatments incorporating traditional Sumbanese medicine were genuinely restorative. The surf break is world-class, genuinely uncrowded." },
+      ],
+      services: [
+        { user: "Julia R.", date: "Feb 2025", rating: 5, text: "The community connection is real — 95% of staff are local Sumbanese, and the resort's foundation work is visible throughout the island. Deeply moving." },
+      ]
+    }
+  },
+  {
+    id: 7, name: "Gili Lankanfushi", location: "North Malé Atoll, Maldives",
+    rating: 4.5, emoji: "🐠", tag: "Overwater villas and the world's first lagoon reserve — paradise preserved.",
+    reviews: {
+      food: [
+        { user: "Nina P.", date: "Feb 2025", rating: 4, text: "The Flying Saucer restaurant on a sandbank offers a dining experience no other resort can match. Maldivian chili paste with grilled fish is perfect simplicity." },
+      ],
+      ambiance: [
+        { user: "Luca M.", date: "Jan 2025", rating: 5, text: "The silence is oceanic. Your villa extends over water so clear you can watch reef sharks from your net hanging below. Nothing else exists." },
+      ],
+      amenities: [
+        { user: "Sarah J.", date: "Mar 2025", rating: 4, text: "The Mr. Friday system — one personal butler for your entire stay — means every need is anticipated. The marine biology team's reef tours were revelatory." },
+      ],
+      services: [
+        { user: "Ahmad R.", date: "Feb 2025", rating: 5, text: "Mr. Friday concept is the gold standard of butler service. Ours remembered our daughter's favorite ice cream flavor from day one and had it waiting every evening." },
+      ]
+    }
+  },
+  {
+    id: 8, name: "Soneva Jani", location: "Noonu Atoll, Maldives",
+    rating: 4.6, emoji: "⭐", tag: "Overwater magic with retractable roofs to sleep under the Milky Way.",
+    badge: "Most Romantic",
+    reviews: {
+      food: [
+        { user: "Emily H.", date: "Jan 2025", rating: 5, text: "The Fresh in the Garden restaurant grows herbs two meters from the table. The detox menu was extraordinary — food as medicine but genuinely delicious." },
+        { user: "Paul D.", date: "Dec 2024", rating: 5, text: "Dining on a private sandbank that appears only at low tide is one of those moments you spend the rest of your life trying to recreate." },
+      ],
+      ambiance: [
+        { user: "Claire S.", date: "Feb 2025", rating: 5, text: "Retract the roof from bed and the entire Milky Way unfolds above you. The silence, the stars, the ocean sounds — spiritual in the deepest sense." },
+      ],
+      amenities: [
+        { user: "Max L.", date: "Feb 2025", rating: 5, text: "The outdoor cinema and observatory are unlike anything in the Maldives. The snorkeling lagoon with resident whale sharks is extraordinary." },
+      ],
+      services: [
+        { user: "Anna V.", date: "Jan 2025", rating: 4, text: "Barefoot luxury is the Soneva ethos and it permeates every interaction — casual warmth combined with total competence. Impeccable without being stiff." },
+      ]
+    }
+  }
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let currentUser = null;
+let currentResort = null;
+let currentCategory = 'food';
+
+// ─── UTILS ───────────────────────────────────────────────────────────────────
+function starsHTML(n) {
+  const full = Math.round(n);
+  return '★'.repeat(full) + '☆'.repeat(5 - full);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'signup'));
+  });
+  document.getElementById('login-form').style.display = tab === 'login' ? '' : 'none';
+  document.getElementById('signup-form').style.display = tab === 'signup' ? '' : 'none';
+}
+
+function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  if (!email || !pass) { showToast('Please fill in all fields'); return; }
+  currentUser = email;
+  showDashboard();
+  showToast('Welcome back!');
+}
+
+function handleSignup() {
+  const name = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const pass = document.getElementById('signup-pass').value;
+  if (!name || !email || !pass) { showToast('Please fill in all fields'); return; }
+  currentUser = name;
+  showDashboard();
+  showToast(`Welcome, ${name}!`);
+}
+
+function logout() {
+  currentUser = null;
+  navigateTo('auth-page');
+  showToast('Signed out successfully');
+}
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+function navigateTo(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const page = document.getElementById(pageId);
+  page.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function showDashboard() {
+  renderResorts(RESORTS);
+  navigateTo('dashboard-page');
+}
+
+function showDetail(id) {
+  currentResort = RESORTS.find(r => r.id === id);
+  if (!currentResort) return;
+  document.getElementById('d-name').textContent = currentResort.name;
+  document.getElementById('d-loc').textContent = currentResort.location;
+  document.getElementById('d-stars').textContent = starsHTML(currentResort.rating);
+  document.getElementById('d-stars2').textContent = starsHTML(currentResort.rating);
+  document.getElementById('d-rating').textContent = `${currentResort.rating} / 5`;
+  document.getElementById('d-score').textContent = currentResort.rating.toFixed(1);
+
+  // Reset tabs
+  document.querySelectorAll('.cat-tab').forEach((el, i) => el.classList.toggle('active', i === 0));
+  currentCategory = 'food';
+  renderReviews('food');
+  navigateTo('detail-page');
+}
+
+// ─── RESORTS ─────────────────────────────────────────────────────────────────
+function renderResorts(list) {
+  const grid = document.getElementById('resortGrid');
+  const count = document.getElementById('results-count');
+  count.textContent = `Showing ${list.length} resort${list.length !== 1 ? 's' : ''}`;
+  if (list.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div class="empty-state-icon">🔍</div>
+      <div class="empty-state-text">No resorts found for your search.</div>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = list.map(r => `
+    <div class="resort-card" onclick="showDetail(${r.id})">
+      ${r.badge ? `<div class="badge">${r.badge}</div>` : ''}
+      <div class="resort-img-placeholder">${r.emoji}</div>
+      <div class="resort-body">
+        <div class="resort-name">${r.name}</div>
+        <div class="resort-location">📍 ${r.location}</div>
+        <div class="star-row">
+          <div class="stars">${starsHTML(r.rating)}</div>
+          <div class="star-num">${r.rating} / 5.0</div>
+        </div>
+        <div class="resort-tag">${r.tag}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterResorts() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  if (!q) { renderResorts(RESORTS); return; }
+  const filtered = RESORTS.filter(r =>
+    r.name.toLowerCase().includes(q) || r.location.toLowerCase().includes(q)
+  );
+  renderResorts(filtered);
+}
+
+// ─── REVIEWS ─────────────────────────────────────────────────────────────────
+function setCategory(cat, el) {
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  currentCategory = cat;
+  renderReviews(cat);
+}
+
+function renderReviews(cat) {
+  const list = document.getElementById('reviewsList');
+  const reviews = currentResort?.reviews[cat] || [];
+  if (reviews.length === 0) {
+    list.innerHTML = `<div class="empty-state">
+      <div class="empty-state-icon">💬</div>
+      <div class="empty-state-text">No reviews in this category yet.</div>
+    </div>`;
+    return;
+  }
+  list.innerHTML = reviews.map((r, i) => `
+    <div class="review-card" style="animation-delay:${i * 0.07}s">
+      <div class="review-header">
+        <div class="reviewer">
+          <div class="avatar">${r.user.charAt(0)}</div>
+          <div>
+            <div class="reviewer-name">${r.user}</div>
+            <div class="reviewer-date">${r.date}</div>
+          </div>
+        </div>
+        <div class="review-stars">${starsHTML(r.rating)}</div>
+      </div>
+      <div class="review-text">${r.text}</div>
+    </div>
+  `).join('');
+}
+
+// ─── THEME ────────────────────────────────────────────────────────────────────
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+}
+
+// ─── DARK MODE CANVAS ─────────────────────────────────────────────────────────
+const canvas = document.getElementById('dark-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+let animFrame;
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+function initParticles() {
+  particles = Array.from({ length: 60 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    size: Math.random() * 1.5 + 0.3,
+    speedX: (Math.random() - 0.5) * 0.3,
+    speedY: (Math.random() - 0.5) * 0.3,
+    opacity: Math.random() * 0.4 + 0.1,
+    glow: Math.random() > 0.85
+  }));
+}
+
+function drawParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (document.documentElement.getAttribute('data-theme') !== 'dark') {
+    cancelAnimationFrame(animFrame);
+    return;
+  }
+
+  particles.forEach(p => {
+    // Gentle mouse attraction
+    const dx = mouseX - p.x, dy = mouseY - p.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 200) {
+      p.x += dx * 0.0008;
+      p.y += dy * 0.0008;
+    }
+
+    p.x += p.speedX;
+    p.y += p.speedY;
+    if (p.x < 0) p.x = canvas.width;
+    if (p.x > canvas.width) p.x = 0;
+    if (p.y < 0) p.y = canvas.height;
+    if (p.y > canvas.height) p.y = 0;
+
+    ctx.beginPath();
+    if (p.glow) {
+      const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 6);
+      grad.addColorStop(0, `rgba(200,169,110,${p.opacity})`);
+      grad.addColorStop(1, 'rgba(200,169,110,0)');
+      ctx.fillStyle = grad;
+      ctx.arc(p.x, p.y, p.size * 6, 0, Math.PI * 2);
+    } else {
+      ctx.fillStyle = `rgba(200,169,110,${p.opacity * 0.5})`;
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    }
+    ctx.fill();
+  });
+
+  animFrame = requestAnimationFrame(drawParticles);
+}
+
+// Start/stop on theme change
+const themeObserver = new MutationObserver(() => {
+  if (document.documentElement.getAttribute('data-theme') === 'dark') {
+    cancelAnimationFrame(animFrame);
+    drawParticles();
+  }
+});
+themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+// ─── CURSOR GLOW & FLOAT ─────────────────────────────────────────────────────
+const cursorGlow = document.getElementById('cursorGlow');
+document.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  cursorGlow.style.left = e.clientX + 'px';
+  cursorGlow.style.top = e.clientY + 'px';
+
+  // Parallax float on dark mode cards
+  if (document.documentElement.getAttribute('data-theme') === 'dark') {
+    const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+    const rx = (e.clientX - cx) / cx;
+    const ry = (e.clientY - cy) / cy;
+    document.querySelectorAll('.resort-card, .review-card, .auth-card').forEach(el => {
+      el.style.transform = `translate(${rx * 5}px, ${ry * 5}px)`;
+    });
+  } else {
+    document.querySelectorAll('.resort-card, .review-card, .auth-card').forEach(el => {
+      el.style.transform = '';
+    });
+  }
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+window.addEventListener('resize', () => { resizeCanvas(); initParticles(); });
+resizeCanvas();
+initParticles();
+</script>
+</body>
+</html>
