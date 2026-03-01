@@ -1,0 +1,108 @@
+*MAKE-MY-TRIP API*
+
+import { ApifyClient } from 'apify-client';
+const client = new ApifyClient({
+ token: <>,
+});
+const input = {
+    "urls": [
+        "https://www.makemytrip.com/hotels/hotel-details/?hotelId=201107121143323974&_uCurrency=INR&checkin=11222025&checkout=12162025&city=CTKUU&country=IN&filterData=DPT_COLLECTIONS%7C8_FAMILY_FAVOURITES_KG%5EHOTEL_PRICE_BUCKET%7C0-4000&isCollectionListing=true&lat=32.22619&lng=77.18859&locusId=CTKUU&locusType=city&rank=2&reference=hotel&roomStayQualifier=2e0e&rsc=1e2e0e&searchText=Manali&type=city&mtkeys=undefined"
+    ],
+    "reviewsPerUrl": 30
+};
+const run = await client.actor("krazee_kaushik/makemytrip-hotel-reviews-scraper").call(input);
+console.log('Results from dataset');
+console.log(`💾 Check your data here: https://console.apify.com/storage/datasets/${run.defaultDatasetId}`);
+const { items } = await client.dataset(run.defaultDatasetId).listItems();
+items.forEach((item) => {
+    console.dir(item);
+});
+
+
+
+*GOOGLE MAPS API*
+
+import { ApifyClient } from 'apify-client';
+const client = new ApifyClient({
+    token: <>,  // ← YOUR TOKEN HERE
+
+});
+async function scrapeHotelReviews() {
+    const input = {
+        "searchString": ["luxury hotel New York"],  // Hotel search terms
+        "maxPlaces": 10,                           // Number of hotels
+        "maxReviews": 50,                          // Reviews per hotel
+        "language": "en",
+        "reviewsSort": "newest"
+    };
+    try {
+        console.log('🌟 Scraping hotel reviews...');
+    const run = await client.actor("compass/google-maps-reviews-scraper").call(input);
+    console.log(`✅ Run complete: https://console.apify.com/storage/datasets/${run.defaultDatasetId}`);
+    const { items } = await client.dataset(run.defaultDatasetId).listItems();
+    require('fs').writeFileSync('hotel_reviews.json', JSON.stringify(items, null, 2));
+    console.log(`📊 Saved ${items.length} reviews to hotel_reviews.json`);
+        console.table(items.slice(0, 3).map(r => ({
+            hotel: r.placeTitle,
+            stars: r.stars,
+            review: r.text?.substring(0, 100) + '...',
+            date: r.publishedAt
+        })));
+    } catch (error) {
+        console.error('❌ Failed:', error.message);
+    }
+}
+scrapeHotelReviews();
+
+
+
+*AGODA API*
+
+import { ApifyClient } from 'apify-client';
+const client = new ApifyClient({
+    token: <>,
+});
+const input = {
+    "cutoffDate": "",
+    "maxReviewsPerHotel": 10
+};
+const run = await client.actor("knagymate/fast-agoda-reviews-scraper").call(input);
+console.log('Results from dataset');
+console.log(`💾 Check your data here: https://console.apify.com/storage/datasets/${run.defaultDatasetId}`);
+const { items } = await client.dataset(run.defaultDatasetId).listItems();
+items.forEach((item) => {
+console.dir(item);
+});
+
+
+*JUSTDIAL API*
+
+import { ApifyClient } from 'apify-client';
+const client = new ApifyClient({
+ token: <>,
+});
+const input = {};
+const run = await client.actor("powerai/justdial-reviews-scraper").call(input);
+console.log('Results from dataset');
+console.log(`💾 Check your data here: https://console.apify.com/storage/datasets/${run.defaultDatasetId}`);
+const { items } = await client.dataset(run.defaultDatasetId).listItems();
+items.forEach((item) => {
+console.dir(item);
+});
+
+
+*MIXED HOTEL REVIEWS THAT INCLUDES TRIPADVISOR,YELP,BOOKING.COM*
+
+import { ApifyClient } from 'apify-client';
+const client = new ApifyClient({
+token: <>,
+});
+const input = {};
+const run = await client.actor("tri_angle/hotel-review-aggregator").call(input);
+console.log('Results from dataset');
+console.log(`💾 Check your data here: https://console.apify.com/storage/datasets/${run.defaultDatasetId}`);
+const { items } = await client.dataset(run.defaultDatasetId).listItems();
+items.forEach((item) => {
+console.dir(item);
+});
+
