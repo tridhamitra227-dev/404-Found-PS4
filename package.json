@@ -1,0 +1,19 @@
+{
+  "name": "marriott-review-backend",
+  "version": "2.0.0",
+  "description": "MongoDB backend for Marriott Review Intelligence — with auth, spam detection, and WhatsApp Business API alerts",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node seed.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.0.3"
+  }
+}
